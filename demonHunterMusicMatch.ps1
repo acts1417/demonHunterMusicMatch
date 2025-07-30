@@ -33,8 +33,11 @@ $wordHash = Generate-Hash -input $favoriteWord
 # Sum the hashes
 $combinedHash = $colorHash + $wordHash
 
+# Convert combinedHash to an integer
+$combinedHashInt = [int]$combinedHash
+
 # Get the index of the chosen song using modulo operation
-$songIndex = $combinedHash % $songs.Count
+$songIndex = $combinedHashInt % $songs.Count
 
 # Select the song
 $selectedSong = $songs[$songIndex]
