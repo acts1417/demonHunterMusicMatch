@@ -1,23 +1,3 @@
-# Load the necessary WPF assembly
-Add-Type -AssemblyName PresentationFramework
-
-# Define the XAML for the WPF window
-[xml]$XAML = @"
-<Window x:Class="MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Music Match" Height="200" Width="300">
-    <Grid>
-        <Label Content="Favorite Color:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="100"/>
-        <TextBox Name="ColorInput" HorizontalAlignment="Left" Margin="110,10,0,0" VerticalAlignment="Top" Width="170"/>
-        <Label Content="Favorite Word:" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="100"/>
-        <TextBox Name="WordInput" HorizontalAlignment="Left" Margin="110,50,0,0" VerticalAlignment="Top" Width="170"/>
-        <Button Content="Submit" HorizontalAlignment="Left" Margin="10,90,0,0" VerticalAlignment="Top" Width="270" Click="Submit_Click"/>
-    </Grid>
-</Window>
-"@
-
-# Create the WPF window
-$reader = (New-Object System.Xml.XmlNodeReader $XAML)
-$window = [Windows.Markup.XamlReader]::Load($reader)
-
 # Define the song list
 $songs = @(
     "Takedown (TWICE Version)",
@@ -42,23 +22,22 @@ function Generate-Hash {
     return [System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($input)) | ForEach-Object { $_.ToString("x2") } | ForEach-Object { [Convert]::ToInt64($_, 16) }
 }
 
-# Event handler for the Submit button
-$window.Add_Click({
-    $color = $window.FindName("ColorInput").Text
-    $word = $window.FindName("WordInput").Text
+# Prompt for user input
+$favoriteColor = Read-Host "Enter your favorite color"
+$favoriteWord = Read-Host "Enter your favorite word"
 
-    if ($color -and $word) {
-        $colorHash = Generate-Hash -input $color
-        $wordHash = Generate-Hash -input $word
-        $combinedHash = $colorHash + $wordHash
-        $songIndex = $combinedHash % $songs.Count
-        $selectedSong = $songs[$songIndex]
+# Generate hashes for the favorite color and word
+$colorHash = Generate-Hash -input $favoriteColor
+$wordHash = Generate-Hash -input $favoriteWord
 
-        [System.Windows.MessageBox]::Show("Your music match is: $selectedSong", "Result", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
-    } else {
-        [System.Windows.MessageBox]::Show("Please enter both your favorite color and word.", "Error", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
-    }
-})
+# Sum the hashes
+$combinedHash = $colorHash + $wordHash
 
-# Show the window
-$window.ShowDialog()
+# Get the index of the chosen song using modulo operation
+$songIndex = $combinedHash % $songs.Count
+
+# Select the song
+$selectedSong = $songs[$songIndex]
+
+# Display the result
+Write-Host "Your music match is: $selectedSong"
