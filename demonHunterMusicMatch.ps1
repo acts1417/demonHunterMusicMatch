@@ -1,7 +1,7 @@
 # Define the song list
 $songs = @(
     "Takedown (TWICE Version)",
-    "How It’s Done",
+    "How Its Done",
     "Soda Pop",
     "Golden",
     "Strategy",
@@ -14,30 +14,31 @@ $songs = @(
     "Love, Maybe"
 )
 
-# Function to generate a simple hash
-function Generate-Hash {
+function Sum-Utf8Values {
     param (
-        [string]$input
+        [string]$inputString
     )
-    return [System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($input)) | ForEach-Object { $_.ToString("x2") } | ForEach-Object { [Convert]::ToInt64($_, 16) }
+
+    $utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($inputString)
+    $sum = 0
+
+    foreach ($byte in $utf8Bytes) {
+        $sum += $byte
+    }
+
+    return $sum
 }
+
 
 # Prompt for user input
 $favoriteColor = Read-Host "Enter your favorite color"
 $favoriteWord = Read-Host "Enter your favorite word"
 
-# Generate hashes for the favorite color and word
-$colorHash = Generate-Hash -input $favoriteColor
-$wordHash = Generate-Hash -input $favoriteWord
-
-# Sum the hashes
-$combinedHash = $colorHash + $wordHash
-
-# Convert combinedHash to an integer
-$combinedHashInt = [int]$combinedHash
+$colorSum = Sum-Utf8Values($favoriteColor)
+$wordSum = Sum-Utf8Values($favoriteWord)
 
 # Get the index of the chosen song using modulo operation
-$songIndex = $combinedHashInt % $songs.Count
+$songIndex = ($colorSum + $wordSum ) % $songs.Count
 
 # Select the song
 $selectedSong = $songs[$songIndex]
